@@ -1,0 +1,24 @@
+{
+    "name": "kins/directum-connector",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Kins Alexander",
+            "email": "kins.alexander@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Kins\\DirectumConnector\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Kins\\DirectumConnector\\DirectumConnectorServiceProvider"
+            ]
+        }
+    }
+}
