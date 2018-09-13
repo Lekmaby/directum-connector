@@ -1,0 +1,43 @@
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class AddDirectumFieldsToUsersTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->unsignedInteger('dir_id')->nullable();
+            $table->string('dir_token')->nullable();
+            $table->dateTime('dir_token_expire')->nullable();
+
+            $table->string('dir_tab_num')->nullable();
+            $table->string('dir_job_title')->nullable();
+            $table->string('dir_department')->nullable();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('dir_id');
+            $table->dropColumn('dir_token');
+            $table->dropColumn('dir_token_expire');
+            $table->dropColumn('dir_tab_num');
+            $table->dropColumn('dir_job_title');
+            $table->dropColumn('dir_department');
+        });
+    }
+}

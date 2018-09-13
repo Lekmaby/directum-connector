@@ -8,7 +8,9 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {},
+    "require": {
+        "ext-soap": "*"
+    },
     "autoload": {
         "psr-4": {
             "Kins\\DirectumConnector\\": "src/"

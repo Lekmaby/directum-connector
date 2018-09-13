@@ -13,11 +13,20 @@ class DirectumConnectorServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        include __DIR__ . '/routes.php';
-
         $this->publishes([
             __DIR__ . '/../config/directum-connector.php' => config_path('directum-connector.php'),
-        ], 'directum-connector');
+        ], 'config');
+
+        $this->mergeConfigFrom(__DIR__ . '/../config/directum-connector.php', 'directum-connector');
+
+        if (!class_exists('AddDirectumFieldsToUsersTable')) {
+            $timestamp = date('Y_m_d_His');
+            $this->publishes([
+                __DIR__ . '/../migrations/add_directum_fields_to_users_table.php.stub' => database_path("/migrations/{$timestamp}_add_directum_fields_to_users_table.php"),
+            ], 'migrations');
+        }
+
+        include __DIR__ . '/routes.php';
     }
 
     /**
@@ -27,17 +36,10 @@ class DirectumConnectorServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/directum-connector.php', 'directum-connector');
-
-        $this->app->singleton('directum-connector', function ($app) {
+        $this->app->singleton('DirectumService', function ($app) {
             $config = $app->make('config');
             $uri = $config->get('directum-connector.uri');
             return new DirectumService($uri);
         });
-    }
-
-    public function provides()
-    {
-        return ['directum-connector'];
     }
 }
