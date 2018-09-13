@@ -10,11 +10,22 @@ trait DirectumUser
     public function updateUserFromDirectum()
     {
         $api = App::make(DirectumService::class);
-        $result = $api->GetEntityItem('РАБ', $this->dir_id);
+        if ($this->dir_id > 0) {
+            $result = $api->GetEntityItem('РАБ', $this->dir_id);
+        } else {
+            $dir_id = $api->runScript('FUAssignmentsGetWorkerIDByLogin', ['UserName' => $this->login]);
+            if (!empty($dir_id) && $dir_id > 0) {
+                $this->dir_id = $dir_id;
+                $result = $api->GetEntityItem('РАБ', $dir_id);
+            } else {
+                return $this;
+            }
+        }
+
 
         //todo получить информаци из директму
         $this->auth_type = 'directum';
-        $this->surname = 'directum';
+        $this->surname = $result;
         $this->name = 'directum';
         $this->name_2 = 'directum';
         $this->email = 'directum';

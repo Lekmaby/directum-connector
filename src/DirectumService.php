@@ -139,6 +139,9 @@ class DirectumService
                 $result['Parameter'][] = array('Key' => 'dataE', 'Value' => self::formatDateForRequest($data['dataS']));
                 $result['Parameter'][] = array('Key' => 'UserID', 'Value' => $data['UserID']);
                 break;
+            case 'FUAssignmentsGetWorkerIDByLogin':
+                $result['Parameter'][] = array('Key' => 'UserName', 'Value' => self::formatDateForRequest($data['UserName']));
+                break;
             default:
                 foreach ($data as $key => $value) {
                     $result['Parameter'][] = array('Key' => $key, 'Value' => $value);
@@ -160,6 +163,9 @@ class DirectumService
                 $result = $data;
                 break;
             case 'FUAssignmentsInWorkForManager':
+                $result = $data;
+                break;
+            case 'FUAssignmentsGetWorkerIDByLogin':
                 $result = $data;
                 break;
             default:
