@@ -1,5 +1,6 @@
 {
     "name": "kins/directum-connector",
+    "description": "Directum connector package for Laravel App",
     "license": "MIT",
     "authors": [
         {
