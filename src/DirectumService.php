@@ -37,10 +37,11 @@ class DirectumService
     public function runScript($name, $data)
     {
         try {
+            $params = self::runScriptPrepareData($name, $data);
             $resp = $this->get()->RunScript(
                 array(
                     'Name'       => $name,
-                    'Parameters' => self::runScriptPrepareData($name, $data)
+                    'Parameters' => $params
                 )
             );
 
@@ -131,20 +132,41 @@ class DirectumService
         $result = [];
         switch ($name) {
             case 'FUAssignmentsStatisticsForManager':
-                $result['Parameter'][] = array('Key' => 'dataS', 'Value' => self::formatDateForRequest($data['dataS']));
-                $result['Parameter'][] = array('Key' => 'dataE', 'Value' => self::formatDateForRequest($data['dataS']));
+                $result['Parameter'][] = [
+                    'Name'  => 'dataS',
+                    'Value' => self::formatDateForRequest($data['dataS'])
+                ];
+                $result['Parameter'][] = [
+                    'Name'  => 'dataE',
+                    'Value' => self::formatDateForRequest($data['dataS'])
+                ];
                 break;
             case 'FUAssignmentsInWorkForManager':
-                $result['Parameter'][] = array('Key' => 'dataS', 'Value' => self::formatDateForRequest($data['dataS']));
-                $result['Parameter'][] = array('Key' => 'dataE', 'Value' => self::formatDateForRequest($data['dataS']));
-                $result['Parameter'][] = array('Key' => 'UserID', 'Value' => $data['UserID']);
+                $result['Parameter'][] = [
+                    'Name'  => 'dataS',
+                    'Value' => self::formatDateForRequest($data['dataS'])
+                ];
+                $result['Parameter'][] = [
+                    'Name'  => 'dataE',
+                    'Value' => self::formatDateForRequest($data['dataS'])
+                ];
+                $result['Parameter'][] = [
+                    'Name'  => 'UserID',
+                    'Value' => $data['UserID']
+                ];
                 break;
             case 'FUAssignmentsGetWorkerIDByLogin':
-                $result['Parameter'][] = array('Key' => 'UserName', 'Value' => self::formatDateForRequest($data['UserName']));
+                $result['Parameter'][] = [
+                    'Name'  => 'UserName',
+                    'Value' => $data['UserName']
+                ];
                 break;
             default:
                 foreach ($data as $key => $value) {
-                    $result['Parameter'][] = array('Key' => $key, 'Value' => $value);
+                    $result['Parameter'][] = [
+                        'Name'  => $key,
+                        'Value' => $value
+                    ];
                 }
         }
 
@@ -156,7 +178,7 @@ class DirectumService
         return date('d.m.Y', strtotime($date));
     }
 
-    private static function runScriptPrepareResult($name, $data): array
+    private static function runScriptPrepareResult($name, $data)
     {
         switch ($name) {
             case 'FUAssignmentsStatisticsForManager':
@@ -166,7 +188,7 @@ class DirectumService
                 $result = $data;
                 break;
             case 'FUAssignmentsGetWorkerIDByLogin':
-                $result = $data;
+                $result = (int)$data;
                 break;
             default:
                 $result = $data;
