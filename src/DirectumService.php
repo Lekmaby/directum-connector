@@ -21,12 +21,17 @@ class DirectumService
                 'exceptions' => true,
             ));
         } catch (SoapFault $e) {
-            Log::error($e->getMessage());
-            if (env('APP_DEBUG', true)) {
-                abort(500, $e->getMessage());
-            }
-            abort(500, 'Directum connection error');
+            $this->ExceptionHandler($e, 'Directum connection error');
         }
+    }
+
+    private function ExceptionHandler($e, $error = 'Directum SOAP Error')
+    {
+        Log::error($e->getMessage());
+        if (env('APP_DEBUG', false)) {
+            abort(500, $e->getMessage());
+        }
+        abort(500, $error);
     }
 
     public function get()
@@ -48,11 +53,7 @@ class DirectumService
             return self::runScriptPrepareResult($name, $resp->RunScriptResult);
 
         } catch (SoapFault $e) {
-            Log::error($e->getMessage());
-            if (env('APP_DEBUG', true)) {
-                abort(500, $e->getMessage());
-            }
-            abort(500, 'Directum RunScript error');
+            $this->ExceptionHandler($e, 'Directum RunScript error');
         }
 
         return false;
@@ -68,38 +69,31 @@ class DirectumService
                 )
             );
 
-            return $resp->RunScriptResult;
+            return $resp->GetEntityResult;
 
         } catch (SoapFault $e) {
-            Log::error($e->getMessage());
-            if (env('APP_DEBUG', true)) {
-                abort(500, $e->getMessage());
-            }
-            abort(500, 'Directum GetEntity error');
+            $this->ExceptionHandler($e, 'Directum GetEntity error');
         }
 
         return false;
     }
 
-    public function OpenUserToken($UserName, $Password, $ExpirationDate)
+    public function OpenUserToken($UserName, $Password, $ExpirationDate = null)
     {
         try {
-            $resp = $this->get()->OpenUserToken(
-                array(
-                    'UserName'       => $UserName,
-                    'Password'       => $Password,
-                    'ExpirationDate' => $ExpirationDate
-                )
-            );
+            $params = [
+                'UserName' => $UserName,
+                'Password' => $Password,
+            ];
+            if ($ExpirationDate !== null) {
+                $params['ExpirationDate'] = $ExpirationDate;
+            }
+            $resp = $this->get()->OpenUserToken($params);
 
-            return $resp->RunScriptResult;
+            return $resp->OpenUserTokenResult;
 
         } catch (SoapFault $e) {
-            Log::error($e->getMessage());
-            if (env('APP_DEBUG', true)) {
-                abort(500, $e->getMessage());
-            }
-            abort(500, 'Directum OpenUserToken error');
+            $this->ExceptionHandler($e, 'Directum OpenUserToken error');
         }
 
         return false;
@@ -114,14 +108,10 @@ class DirectumService
                 )
             );
 
-            return $resp->RunScriptResult;
+            return $resp->CloseUserTokenResult;
 
         } catch (SoapFault $e) {
-            Log::error($e->getMessage());
-            if (env('APP_DEBUG', true)) {
-                abort(500, $e->getMessage());
-            }
-            abort(500, 'Directum CloseUserToken error');
+            $this->ExceptionHandler($e, 'Directum CloseUserToken error');
         }
 
         return false;

@@ -40,7 +40,7 @@ class DirectumConnectorServiceProvider extends ServiceProvider
         $this->app->singleton('DirectumService', function ($app) {
             $config = $app->make('config');
             $uri = $config->get('directum-connector.uri');
-            if(empty($uri)){
+            if (empty($uri)) {
                 throw new Exception('Directum WSDL URI is empty');
             }
             return new DirectumService($uri);
