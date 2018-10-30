@@ -4,6 +4,7 @@ namespace Kins\DirectumConnector;
 
 use Illuminate\Support\Facades\Log;
 
+use SimpleXMLElement;
 use SoapClient;
 use SoapFault;
 
@@ -166,10 +167,10 @@ class DirectumService
     {
         switch ($name) {
             case 'FUAssignmentsStatisticsForManager':
-                $result = $data;
+                $result = new SimpleXMLElement('<result>' . $data . '</result>');
                 break;
             case 'FUAssignmentsInWorkForManager':
-                $result = $data;
+                $result = new SimpleXMLElement('<result>' . $data . '</result>');
                 break;
             case 'FUAssignmentsGetWorkerIDByLogin':
                 $result = (int)$data;
