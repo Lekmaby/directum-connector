@@ -65,15 +65,7 @@ class DirectumService
                 'RecordKey'     => $RecordKey
             ]);
 
-            $result = [];
-            foreach ($resp->GetEntityResult->References->Reference->Records->Record->Sections->Section->Requisites->Requisite as $requisite) {
-                $result[$requisite->Name] = (array)$requisite;
-                if (!isset($result[$requisite->Name]['DisplayValue'])) {
-                    $result[$requisite->Name]['DisplayValue'] = '';
-                }
-            }
-
-            return $result;
+            return self::getEntityPrepareResult($ReferenceName, $resp->GetEntityResult);
 
         } catch (SoapFault $e) {
             $this->ExceptionHandler($e, 'Directum GetEntity error');
@@ -110,7 +102,7 @@ class DirectumService
                 'Token' => $Token
             ]);
 
-            return $resp->CloseUserTokenResult;
+            return $resp;
 
         } catch (SoapFault $e) {
             $this->ExceptionHandler($e, 'Directum CloseUserToken error');
@@ -130,7 +122,7 @@ class DirectumService
                 ];
                 $result['Parameter'][] = [
                     'Name'  => 'dataE',
-                    'Value' => self::formatDateForRequest($data['dataS'])
+                    'Value' => self::formatDateForRequest($data['dataE'])
                 ];
                 break;
             case 'FUAssignmentsInWorkForManager':
@@ -140,7 +132,7 @@ class DirectumService
                 ];
                 $result['Parameter'][] = [
                     'Name'  => 'dataE',
-                    'Value' => self::formatDateForRequest($data['dataS'])
+                    'Value' => self::formatDateForRequest($data['dataE'])
                 ];
                 $result['Parameter'][] = [
                     'Name'  => 'UserID',
@@ -181,6 +173,37 @@ class DirectumService
                 break;
             case 'FUAssignmentsGetWorkerIDByLogin':
                 $result = (int)$data;
+                break;
+            default:
+                $result = $data;
+        }
+
+        return $result;
+    }
+
+    private static function getEntityPrepareResult($name, $data)
+    {
+        $result = [];
+        switch ($name) {
+            case 'ПОЛ':
+                foreach ($data->References->Reference->Records->Record->Sections->Section as $section) {
+                    if (isset($section->Requisites)) {
+                        foreach ($section->Requisites->Requisite as $requisite) {
+                            $result[$requisite->Name] = (array)$requisite;
+                            if (!isset($result[$requisite->Name]['DisplayValue'])) {
+                                $result[$requisite->Name]['DisplayValue'] = '';
+                            }
+                        }
+                    }
+                }
+                break;
+            case 'РАБ':
+                foreach ($data->References->Reference->Records->Record->Sections->Section->Requisites->Requisite as $requisite) {
+                    $result[$requisite->Name] = (array)$requisite;
+                    if (!isset($result[$requisite->Name]['DisplayValue'])) {
+                        $result[$requisite->Name]['DisplayValue'] = '';
+                    }
+                }
                 break;
             default:
                 $result = $data;
