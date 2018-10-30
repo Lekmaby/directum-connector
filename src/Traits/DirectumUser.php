@@ -7,12 +7,16 @@ trait DirectumUser
 {
     public function updateUserFromDirectum()
     {
-        $dir_id = \DirectumSoap::runScript('FUAssignmentsGetWorkerIDByLogin', ['UserName' => $this->login]);
-        if (!empty($dir_id) && $dir_id > 0) {
-            $this->dir_id = $dir_id;
-            $result = \DirectumSoap::GetEntityItem('РАБ', $dir_id);
+        if ($this->dir_id > 0) {
+            $result = \DirectumSoap::GetEntityItem('РАБ', $this->dir_id);
         } else {
-            return $this;
+            $dir_id = \DirectumSoap::runScript('FUAssignmentsGetWorkerIDByLogin', ['UserName' => $this->login]);
+            if (!empty($dir_id) && $dir_id > 0) {
+                $this->dir_id = $dir_id;
+                $result = \DirectumSoap::GetEntityItem('РАБ', $dir_id);
+            } else {
+                return $this;
+            }
         }
 
         $name = self::split_name($result['Персона']['DisplayValue']);
