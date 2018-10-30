@@ -14,12 +14,12 @@ class DirectumService
     public function __construct($uri)
     {
         try {
-            $this->soap = new SoapClient($uri, array(
+            $this->soap = new SoapClient($uri, [
                 'cache_wsdl' => WSDL_CACHE_NONE,
                 'cache_ttl'  => 0,
                 'trace'      => true,
                 'exceptions' => true,
-            ));
+            ]);
         } catch (SoapFault $e) {
             $this->ExceptionHandler($e, 'Directum connection error');
         }
@@ -43,12 +43,10 @@ class DirectumService
     {
         try {
             $params = self::runScriptPrepareData($name, $data);
-            $resp = $this->get()->RunScript(
-                array(
-                    'Name'       => $name,
-                    'Parameters' => $params
-                )
-            );
+            $resp = $this->get()->RunScript([
+                'Name'       => $name,
+                'Parameters' => $params
+            ]);
 
             return self::runScriptPrepareResult($name, $resp->RunScriptResult);
 
@@ -62,14 +60,20 @@ class DirectumService
     public function GetEntityItem($ReferenceName, $RecordKey)
     {
         try {
-            $resp = $this->get()->GetEntity(
-                array(
-                    'ReferenceName' => $ReferenceName,
-                    'RecordKey'     => $RecordKey
-                )
-            );
+            $resp = $this->get()->GetEntity([
+                'ReferenceName' => $ReferenceName,
+                'RecordKey'     => $RecordKey
+            ]);
 
-            return $resp->GetEntityResult;
+            $result = [];
+            foreach ($resp->GetEntityResult->References->Reference->Records->Record->Sections->Section->Requisites->Requisite as $requisite) {
+                $result[$requisite->Name] = (array)$requisite;
+                if (!isset($result[$requisite->Name]['DisplayValue'])) {
+                    $result[$requisite->Name]['DisplayValue'] = '';
+                }
+            }
+
+            return $result;
 
         } catch (SoapFault $e) {
             $this->ExceptionHandler($e, 'Directum GetEntity error');
@@ -102,11 +106,9 @@ class DirectumService
     public function CloseUserToken($Token)
     {
         try {
-            $resp = $this->get()->CloseUserToken(
-                array(
-                    'Token' => $Token
-                )
-            );
+            $resp = $this->get()->CloseUserToken([
+                'Token' => $Token
+            ]);
 
             return $resp->CloseUserTokenResult;
 
