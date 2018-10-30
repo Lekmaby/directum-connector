@@ -7,16 +7,12 @@ trait DirectumUser
 {
     public function updateUserFromDirectum()
     {
-        if ($this->dir_id > 0) {
-            $result = \DirectumSoap::GetEntityItem('РАБ', $this->dir_id);
+        $dir_id = \DirectumSoap::runScript('FUAssignmentsGetWorkerIDByLogin', ['UserName' => $this->login]);
+        if (!empty($dir_id) && $dir_id > 0) {
+            $this->dir_id = $dir_id;
+            $result = \DirectumSoap::GetEntityItem('РАБ', $dir_id);
         } else {
-            $dir_id = \DirectumSoap::runScript('FUAssignmentsGetWorkerIDByLogin', ['UserName' => $this->login]);
-            if (!empty($dir_id) && $dir_id > 0) {
-                $this->dir_id = $dir_id;
-                $result = \DirectumSoap::GetEntityItem('РАБ', $dir_id);
-            } else {
-                return $this;
-            }
+            return $this;
         }
 
         $name = self::split_name($result['Персона']['DisplayValue']);
@@ -24,12 +20,10 @@ trait DirectumUser
         $this->surname = $name['last_name'];
         $this->name = $name['first_name'];
         $this->name_2 = $name['middle_name'];
-        //$this->email = $result;
-        //$this->gender = 'directum';
-        //$this->birthdate = 'directum';
-        //$this->dir_tab_num = '';
         $this->dir_job_title = $result['ВидДолжности']['DisplayValue'];
         $this->dir_department = $result['Подразделение']['DisplayValue'];
+
+        $this->setPhotoFromBase64($result['Текст']['Value']);
 
         $this->update();
 
