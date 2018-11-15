@@ -19,7 +19,6 @@ trait DirectumUser
             }
         }
 
-        $user = \DirectumSoap::GetEntityItem('ПОЛ', $result['Пользователь']['Value']);
 
         $name = self::split_name($result['Персона']['DisplayValue']);
 
@@ -28,7 +27,12 @@ trait DirectumUser
         $this->name_2 = $name['middle_name'];
         $this->dir_job_title = $result['ВидДолжности']['DisplayValue'];
         $this->dir_department = $result['Подразделение']['DisplayValue'];
-        $this->login = $user['Дополнение']['Value'];
+
+        if (!empty($result['Пользователь']['Value'])) {
+            $user = \DirectumSoap::GetEntityItem('ПОЛ', $result['Пользователь']['Value']);
+            $this->login = $user['Дополнение']['Value'];
+        }
+
 
         $this->setPhotoFromBase64($result['Текст']['Value']);
 
