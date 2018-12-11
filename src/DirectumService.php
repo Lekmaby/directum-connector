@@ -182,6 +182,9 @@ class DirectumService
             case 'FUAssignmentsInWorkForManager':
                 $result = new SimpleXMLElement('<result>' . $data . '</result>');
                 break;
+            case 'FUAssigDetalesInWorkForManager':
+                $result = new SimpleXMLElement('<result>' . $data . '</result>');
+                break;
             case 'FUAssignmentsGetWorkerIDByLogin':
                 $result = (int)$data;
                 break;
