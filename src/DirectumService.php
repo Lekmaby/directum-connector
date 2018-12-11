@@ -90,7 +90,17 @@ class DirectumService
             return $resp->OpenUserTokenResult;
 
         } catch (SoapFault $e) {
-            $this->ExceptionHandler($e, 'Directum OpenUserToken error');
+            // Если авторизация по внутреннему логину не прошла, пробуем через доменную авторизацию
+            try {
+                $domain = env('DIRECTUM_DOMAIN');
+                $params['UserName'] = $domain . '\\' . $UserName;
+
+                $resp = $this->get()->OpenUserToken($params);
+
+                return $resp->OpenUserTokenResult;
+            } catch (SoapFault $e) {
+                $this->ExceptionHandler($e, 'Directum OpenUserToken error');
+            }
         }
 
         return false;
