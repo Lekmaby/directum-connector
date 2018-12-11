@@ -177,13 +177,9 @@ class DirectumService
     {
         switch ($name) {
             case 'FUAssignmentsStatisticsForManager':
-                $result = new SimpleXMLElement('<result>' . $data . '</result>');
-                break;
             case 'FUAssignmentsInWorkForManager':
-                $result = new SimpleXMLElement('<result>' . $data . '</result>');
-                break;
             case 'FUAssigDetalesInWorkForManager':
-                $result = new SimpleXMLElement('<result>' . $data . '</result>');
+                $result = new SimpleXMLElement('<result>' . trim(preg_replace('/\s+/', ' ', $data)) . '</result>');
                 break;
             case 'FUAssignmentsGetWorkerIDByLogin':
                 $result = (int)$data;
