@@ -25,7 +25,7 @@ trait DirectumUser
         $this->surname = $name['last_name'];
         $this->name = $name['first_name'];
         $this->name_2 = $name['middle_name'];
-        $this->dir_job_title = $result['ВидДолжности']['DisplayValue'];
+        $this->dir_job_title = $result['Строка']['Value'];
         $this->dir_department = $result['Подразделение']['DisplayValue'];
 
 //        if (!empty($result['Пользователь']['Value'])) {
