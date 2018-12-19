@@ -43,11 +43,13 @@ class DirectumService
     public function runScript($name, $data = null)
     {
         try {
-            $params = self::runScriptPrepareData($name, $data);
-            $resp = $this->get()->RunScript([
-                'Name'       => $name,
-                'Parameters' => $params
-            ]);
+            $params['Name'] = $name;
+            $parameters = self::runScriptPrepareData($name, $data);
+            if ($parameters !== null) {
+                $params['Parameters'] = $parameters;
+            }
+
+            $resp = $this->get()->RunScript($params);
 
             return self::runScriptPrepareResult($name, $resp->RunScriptResult);
 
@@ -85,24 +87,11 @@ class DirectumService
             if ($ExpirationDate !== null) {
                 $params['ExpirationDate'] = $ExpirationDate;
             }
-            $resp = $this->get()->OpenUserToken($params);
 
-            return $resp->OpenUserTokenResult;
+            return $this->get()->OpenUserToken($params)->OpenUserTokenResult;
 
         } catch (SoapFault $e) {
-            // Если авторизация по внутреннему логину не прошла, пробуем через доменную авторизацию
             $this->ExceptionHandler($e, 'Directum OpenUserToken error');
-
-//            try {
-//                $domain = env('DIRECTUM_DOMAIN');
-//                $params['UserName'] = $domain . '\\' . $UserName;
-//
-//                $resp = $this->get()->OpenUserToken($params);
-//
-//                return $resp->OpenUserTokenResult;
-//            } catch (SoapFault $e) {
-//                $this->ExceptionHandler($e, 'Directum OpenUserToken error');
-//            }
         }
 
         return false;
@@ -124,7 +113,7 @@ class DirectumService
         return false;
     }
 
-    private static function runScriptPrepareData($name, $data): array
+    private static function runScriptPrepareData($name, $data): ?array
     {
         if ($data === null) {
             return null;
@@ -184,8 +173,12 @@ class DirectumService
             case 'FUAssignmentsStatisticsForManager':
             case 'FUAssignmentsInWorkForManager':
             case 'FUAssigDetalesInWorkForManager':
+                $result = new SimpleXMLElement('<result>' . trim(preg_replace('/\s+/', ' ', $data)) . '</result>');
+                break;
             case 'FUAssignmentsGetAnalitics':
                 $result = new SimpleXMLElement('<result>' . trim(preg_replace('/\s+/', ' ', $data)) . '</result>');
+                $result = json_decode(json_encode($result), TRUE);
+                $result = $result['Workers']['Worker'];
                 break;
             case 'FUAssignmentsGetWorkerIDByLogin':
                 $result = (int)$data;

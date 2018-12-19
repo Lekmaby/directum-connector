@@ -10,28 +10,16 @@ trait DirectumEmployee
         if ($this->dir_id > 0) {
             $result = \DirectumSoap::GetEntityItem('РАБ', $this->dir_id);
         } else {
-            $dir_id = \DirectumSoap::runScript('FUAssignmentsGetWorkerIDByLogin', ['UserName' => $this->login]);
-            if (!empty($dir_id) && $dir_id > 0) {
-                $this->dir_id = $dir_id;
-                $result = \DirectumSoap::GetEntityItem('РАБ', $dir_id);
-            } else {
-                return $this;
-            }
+            return false;
         }
-
 
         $name = self::split_name($result['Персона']['DisplayValue']);
 
         $this->surname = $name['last_name'];
         $this->name = $name['first_name'];
         $this->name_2 = $name['middle_name'];
-        $this->dir_job_title = $result['Строка']['Value'];
-        $this->dir_department = $result['Подразделение']['DisplayValue'];
-
-//        if (!empty($result['Пользователь']['Value'])) {
-//            $user = \DirectumSoap::GetEntityItem('ПОЛ', $result['Пользователь']['Value']);
-//            $this->login = $user['Дополнение']['Value'];
-//        }
+        $this->job_title = $result['Строка']['Value'];
+        $this->department = $result['Подразделение']['DisplayValue'];
 
 
         $this->setPhotoFromBase64($result['Текст']['Value']);

@@ -2,49 +2,48 @@
 
 namespace Kins\DirectumConnector\Traits;
 
+use Illuminate\Support\Str;
 
 trait DirectumUser
 {
-    public function updateUsersFromDirectum()
+    public static function updateUsersFromDirectum()
     {
         $dirUsers = \DirectumSoap::runScript('FUAssignmentsGetAnalitics');
-        $dirUsers = json_decode(json_encode($dirUsers), TRUE);
 
-        var_dump($dirUsers); die();
+        foreach ($dirUsers as $dirUser) {
+            $user = self::where('dir_id', $dirUser['UserID'])->first();
+            if (!$user) {
+                $user = new self();
+                $user->uuid = (string)Str::uuid();
+                $user->dir_id = $dirUser['UserID'];
+            }
 
-        if (!empty($dirUsers) && $dir_id > 0) {
-            $this->dir_id = $dir_id;
-            $result = \DirectumSoap::GetEntityItem('РАБ', $dir_id);
-        } else {
-            return $this;
+            $user->active = true;
+            $user->surname = !is_array($dirUser['SurName']) ? $dirUser['SurName'] : null;
+            $user->name = !is_array($dirUser['FirstName']) ? $dirUser['FirstName'] : null;
+            $user->name_2 = !is_array($dirUser['SecondName']) ? $dirUser['SecondName'] : null;
+            $user->login = !is_array($dirUser['Login']) ? $dirUser['Login'] : $user->uuid;
+
+
+            switch ($dirUser['Autorithation']) {
+                case 'доменная':
+                    $user->auth_type = 'directum_domain';
+                    break;
+                case 'внутренняя':
+                    $user->auth_type = 'directum_inner';
+                    break;
+                default:
+                    $user->auth_type = 'directum_inner';
+            }
+
+            $user->save();
+
+            if (array_key_exists('Photo', $dirUser) && $dirUser['Photo'] > 0 !== '') {
+                $user->setPhotoFromBase64($dirUser['Photo']);
+            }
         }
 
-
-        $name = self::split_name($result['Персона']['DisplayValue']);
-
-        $this->surname = $name['last_name'];
-        $this->name = $name['first_name'];
-        $this->name_2 = $name['middle_name'];
-        $this->dir_job_title = $result['Строка']['Value'];
-        $this->dir_department = $result['Подразделение']['DisplayValue'];
-
-
-        $this->setPhotoFromBase64($result['Текст']['Value']);
-
-        $this->update();
-
-        return $this;
-    }
-
-    public static function split_name($name)
-    {
-        $parts = preg_split('/[\s,]+/', $name);
-        $name = [];
-        $name['last_name'] = $parts[0];
-        $name['first_name'] = $parts[1] ?? '';
-        $name['middle_name'] = $parts[2] ?? '';
-
-        return $name;
+        return true;
     }
 
 
