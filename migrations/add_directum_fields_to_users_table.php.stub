@@ -17,10 +17,6 @@ class AddDirectumFieldsToUsersTable extends Migration
             $table->unsignedInteger('dir_id')->nullable();
             $table->string('dir_token')->nullable();
             $table->dateTime('dir_token_expire')->nullable();
-
-            $table->string('dir_tab_num')->nullable();
-            $table->string('dir_job_title')->nullable();
-            $table->string('dir_department')->nullable();
         });
     }
 
@@ -35,9 +31,6 @@ class AddDirectumFieldsToUsersTable extends Migration
             $table->dropColumn('dir_id');
             $table->dropColumn('dir_token');
             $table->dropColumn('dir_token_expire');
-            $table->dropColumn('dir_tab_num');
-            $table->dropColumn('dir_job_title');
-            $table->dropColumn('dir_department');
         });
     }
 }

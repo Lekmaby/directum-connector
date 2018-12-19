@@ -11,7 +11,8 @@
     "minimum-stability": "dev",
     "require": {
         "ext-soap": "*",
-        "ext-simplexml": "*"
+        "ext-simplexml": "*",
+        "ext-json": "*"
     },
     "autoload": {
         "psr-4": {

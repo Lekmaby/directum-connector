@@ -40,7 +40,7 @@ class DirectumService
         return $this->soap;
     }
 
-    public function runScript($name, $data)
+    public function runScript($name, $data = null)
     {
         try {
             $params = self::runScriptPrepareData($name, $data);
@@ -91,16 +91,18 @@ class DirectumService
 
         } catch (SoapFault $e) {
             // Если авторизация по внутреннему логину не прошла, пробуем через доменную авторизацию
-            try {
-                $domain = env('DIRECTUM_DOMAIN');
-                $params['UserName'] = $domain . '\\' . $UserName;
+            $this->ExceptionHandler($e, 'Directum OpenUserToken error');
 
-                $resp = $this->get()->OpenUserToken($params);
-
-                return $resp->OpenUserTokenResult;
-            } catch (SoapFault $e) {
-                $this->ExceptionHandler($e, 'Directum OpenUserToken error');
-            }
+//            try {
+//                $domain = env('DIRECTUM_DOMAIN');
+//                $params['UserName'] = $domain . '\\' . $UserName;
+//
+//                $resp = $this->get()->OpenUserToken($params);
+//
+//                return $resp->OpenUserTokenResult;
+//            } catch (SoapFault $e) {
+//                $this->ExceptionHandler($e, 'Directum OpenUserToken error');
+//            }
         }
 
         return false;
@@ -124,6 +126,9 @@ class DirectumService
 
     private static function runScriptPrepareData($name, $data): array
     {
+        if ($data === null) {
+            return null;
+        }
         $result = [];
         switch ($name) {
             case 'FUAssignmentsStatisticsForManager':
@@ -179,6 +184,7 @@ class DirectumService
             case 'FUAssignmentsStatisticsForManager':
             case 'FUAssignmentsInWorkForManager':
             case 'FUAssigDetalesInWorkForManager':
+            case 'FUAssignmentsGetAnalitics':
                 $result = new SimpleXMLElement('<result>' . trim(preg_replace('/\s+/', ' ', $data)) . '</result>');
                 break;
             case 'FUAssignmentsGetWorkerIDByLogin':
