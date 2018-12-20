@@ -18,6 +18,7 @@ trait DirectumUser
                 $user->dir_id = $dirUser['UserID'];
             }
 
+            $user->sync_source = 'directum';
             $user->active = true;
             $user->surname = !is_array($dirUser['SurName']) ? $dirUser['SurName'] : null;
             $user->name = !is_array($dirUser['FirstName']) ? $dirUser['FirstName'] : null;
