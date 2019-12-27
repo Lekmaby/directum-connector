@@ -3,7 +3,6 @@
 namespace Kins\DirectumConnector;
 
 use Illuminate\Support\Facades\Log;
-
 use SimpleXMLElement;
 use SoapClient;
 use SoapFault;
@@ -122,38 +121,38 @@ class DirectumService
         switch ($name) {
             case 'FUAssignmentsStatisticsForManager':
                 $result[] = [
-                    'Key'  => 'dataS',
+                    'Key'   => 'dataS',
                     'Value' => self::formatDateForRequest($data['dataS'])
                 ];
                 $result[] = [
-                    'Key'  => 'dataE',
+                    'Key'   => 'dataE',
                     'Value' => self::formatDateForRequest($data['dataE'])
                 ];
                 break;
             case 'FUAssignmentsInWorkForManager':
                 $result[] = [
-                    'Key'  => 'dataS',
+                    'Key'   => 'dataS',
                     'Value' => self::formatDateForRequest($data['dataS'])
                 ];
                 $result[] = [
-                    'Key'  => 'dataE',
+                    'Key'   => 'dataE',
                     'Value' => self::formatDateForRequest($data['dataE'])
                 ];
                 $result[] = [
-                    'Key'  => 'UserID',
+                    'Key'   => 'UserID',
                     'Value' => $data['UserID']
                 ];
                 break;
             case 'FUAssignmentsGetWorkerIDByLogin':
                 $result[] = [
-                    'Key'  => 'UserName',
+                    'Key'   => 'UserName',
                     'Value' => $data['UserName']
                 ];
                 break;
             default:
                 foreach ($data as $key => $value) {
                     $result[] = [
-                        'Key'  => $key,
+                        'Key'   => $key,
                         'Value' => $value
                     ];
                 }
@@ -169,11 +168,23 @@ class DirectumService
 
     private static function runScriptPrepareResult($name, $data)
     {
+        libxml_use_internal_errors(true);
+
         switch ($name) {
             case 'FUAssignmentsStatisticsForManager':
             case 'FUAssignmentsInWorkForManager':
             case 'FUAssigDetalesInWorkForManager':
-                $result = new SimpleXMLElement('<result>' . trim(preg_replace('/\s+/', ' ', $data)) . '</result>');
+                //$result = new SimpleXMLElement('<result>' . trim(preg_replace('/\s+/', ' ', $data)) . '</result>');
+                $xmlstr = '<result>' . trim($data) . '</result>';
+                $result = simplexml_load_string($xmlstr);
+                $errors = libxml_get_errors();
+                if ($errors && count($errors) > 0) {
+                    $xml = explode("\n", $xmlstr);
+                    foreach ($errors as $error) {
+                        dump(self::display_xml_error($error, $xml));
+                    }
+                    dd($xml);
+                }
                 break;
             case 'FUAssignmentsGetAnalitics':
                 $result = new SimpleXMLElement('<result>' . trim(preg_replace('/\s+/', ' ', $data)) . '</result>');
@@ -186,6 +197,8 @@ class DirectumService
             default:
                 $result = $data;
         }
+
+        libxml_clear_errors();
 
         return $result;
     }
@@ -230,5 +243,33 @@ class DirectumService
         }
 
         return $result;
+    }
+
+    private static function display_xml_error($error, $xml)
+    {
+        $return = $xml[$error->line - 1] . "\n";
+        $return .= str_repeat('-', $error->column) . "^\n";
+
+        switch ($error->level) {
+            case LIBXML_ERR_WARNING:
+                $return .= "Warning $error->code: ";
+                break;
+            case LIBXML_ERR_ERROR:
+                $return .= "Error $error->code: ";
+                break;
+            case LIBXML_ERR_FATAL:
+                $return .= "Fatal Error $error->code: ";
+                break;
+        }
+
+        $return .= trim($error->message) .
+            "\n  Line: $error->line" .
+            "\n  Column: $error->column";
+
+        if ($error->file) {
+            $return .= "\n  File: $error->file";
+        }
+
+        return $return;
     }
 }
