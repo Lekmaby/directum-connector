@@ -46,7 +46,7 @@ class DirectumService
             $params['Name'] = $name;
             $parameters = self::runScriptPrepareData($name, $data);
             if ($parameters !== null) {
-                $params['Parameters'] = $parameters;
+                $params['Params'] = $parameters;
             }
 
             $resp = $this->get()->RunScript($params);
@@ -121,39 +121,39 @@ class DirectumService
         $result = [];
         switch ($name) {
             case 'FUAssignmentsStatisticsForManager':
-                $result['Parameter'][] = [
-                    'Name'  => 'dataS',
+                $result[] = [
+                    'Key'  => 'dataS',
                     'Value' => self::formatDateForRequest($data['dataS'])
                 ];
-                $result['Parameter'][] = [
-                    'Name'  => 'dataE',
+                $result[] = [
+                    'Key'  => 'dataE',
                     'Value' => self::formatDateForRequest($data['dataE'])
                 ];
                 break;
             case 'FUAssignmentsInWorkForManager':
-                $result['Parameter'][] = [
-                    'Name'  => 'dataS',
+                $result[] = [
+                    'Key'  => 'dataS',
                     'Value' => self::formatDateForRequest($data['dataS'])
                 ];
-                $result['Parameter'][] = [
-                    'Name'  => 'dataE',
+                $result[] = [
+                    'Key'  => 'dataE',
                     'Value' => self::formatDateForRequest($data['dataE'])
                 ];
-                $result['Parameter'][] = [
-                    'Name'  => 'UserID',
+                $result[] = [
+                    'Key'  => 'UserID',
                     'Value' => $data['UserID']
                 ];
                 break;
             case 'FUAssignmentsGetWorkerIDByLogin':
-                $result['Parameter'][] = [
-                    'Name'  => 'UserName',
+                $result[] = [
+                    'Key'  => 'UserName',
                     'Value' => $data['UserName']
                 ];
                 break;
             default:
                 foreach ($data as $key => $value) {
-                    $result['Parameter'][] = [
-                        'Name'  => $key,
+                    $result[] = [
+                        'Key'  => $key,
                         'Value' => $value
                     ];
                 }
@@ -193,24 +193,35 @@ class DirectumService
     private static function getEntityPrepareResult($name, $data)
     {
         $result = [];
+        $data = new SimpleXMLElement($data);
         switch ($name) {
             case 'ПОЛ':
-                foreach ($data->References->Reference->Records->Record->Sections->Section as $section) {
+                /**
+                 * Может не работать, т.к. нигде не вызывается
+                 * Структура XML может отличаться
+                 */
+                foreach ($data->Object->Record->Section as $section) {
                     if (isset($section->Requisites)) {
                         foreach ($section->Requisites->Requisite as $requisite) {
-                            $result[$requisite->Name] = (array)$requisite;
-                            if (!isset($result[$requisite->Name]['DisplayValue'])) {
-                                $result[$requisite->Name]['DisplayValue'] = '';
+                            $Name = (string)$requisite->attributes()->Name;
+                            $Data = ((array)$requisite->attributes())['@attributes'];
+                            $Data['Value'] = (string)$requisite;
+                            $result[$Name] = $Data;
+                            if (!isset($result[$Name]['DisplayValue'])) {
+                                $result[$Name]['DisplayValue'] = '';
                             }
                         }
                     }
                 }
                 break;
             case 'РАБ':
-                foreach ($data->References->Reference->Records->Record->Sections->Section->Requisites->Requisite as $requisite) {
-                    $result[$requisite->Name] = (array)$requisite;
-                    if (!isset($result[$requisite->Name]['DisplayValue'])) {
-                        $result[$requisite->Name]['DisplayValue'] = '';
+                foreach ($data->Object->Record->Section->Requisite as $requisite) {
+                    $Name = (string)$requisite->attributes()->Name;
+                    $Data = ((array)$requisite->attributes())['@attributes'];
+                    $Data['Value'] = (string)$requisite;
+                    $result[$Name] = $Data;
+                    if (!isset($result[$Name]['DisplayValue'])) {
+                        $result[$Name]['DisplayValue'] = '';
                     }
                 }
                 break;
